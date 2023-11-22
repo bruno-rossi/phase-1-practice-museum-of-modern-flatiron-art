@@ -35,16 +35,17 @@
 // 2. The patch request will take the number from the counter and patch it in "tickets_bought" inside the db.
 // 3. Update the <p id="tickets-bought">0 Tickets Bought</p> to display the number from the db.
 
+let storeCurrentExhibits;
 
 fetch("http://localhost:3000/current-exhibits")
 .then(response => response.json())
 .then(currentExhibits => {
 
+    storeCurrentExhibits = currentExhibits;
     // const currentExhibit = Object.values(currentExhibits[0]);
     console.log(currentExhibits);
     displayExhibitInfo(currentExhibits[0]);
     buyTicket(currentExhibits[0].tickets_bought);
-
 })
 
 function displayExhibitInfo(exhibit) {
@@ -69,7 +70,20 @@ document.querySelector("#comment-form").addEventListener("submit", event => {
 
     addComment(newComment);
 
-    newComment = '';
+    storeCurrentExhibits[0].comments.push(newComment);
+    const updatedComments = storeCurrentExhibits[0].comments;
+
+    fetch("http://localhost:3000/current-exhibits/1", {
+        method: "PATCH",
+        headers:{
+            "Content-Type": "application/json",
+            "Accept": "application/json" },
+        body: JSON.stringify({
+            comments: updatedComments
+        })
+        })
+
+        document.querySelector("#comment-form").reset();
 })
 
 function buyTicket(ticketsBought) {
@@ -89,7 +103,7 @@ function buyTicket(ticketsBought) {
 
         document.querySelector("#tickets-bought").textContent = `${totalTicketsBought} Tickets Bought`;
 
-        console.log(`${totalTicketsBought} tickets have been bought.`)
+        // console.log(`${totalTicketsBought} tickets have been bought.`)
 
     })
 
